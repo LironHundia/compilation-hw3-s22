@@ -5,6 +5,11 @@
 #include <string>
 using namespace std;
 
+#define YYSTYPE BaseClass*;
+extern int yylineno;
+int yylex();
+void yyerror(const char* input);
+
 namespace output{
     void endScope();
     void printID(const string& id, int offset, const string& type);

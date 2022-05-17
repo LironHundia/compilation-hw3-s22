@@ -1,6 +1,6 @@
 %{
+#include "hw3_output.hpp"
 #include "parser.tab.hpp"
-#include "output.hpp"
 #include <stdio.h>
 %}
 
@@ -38,7 +38,7 @@ continue                    return CONTINUE;
 \<|\>|\<\=|\>\=             return RELOP_GLT;
 [\+|\-]                     return BINOP_ADD;
 [\*|\/]                     return BINOP_MUL;
-[a-zA-Z][a-zA-Z0-9]*        return ID;
+[a-zA-Z][a-zA-Z0-9]*        yylval = new IDClass(yytext); return ID;
 0|[1-9][0-9]*               return NUM;
 \"([^\n\r\"\\]|\\[rnt"\\])+\" return STRING;
 

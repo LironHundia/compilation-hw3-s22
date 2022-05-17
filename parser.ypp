@@ -1,9 +1,5 @@
 %{
-    #include "output.hpp"
-
-    extern int yylineno;
-    int yylex();
-    void yyerror(const char* input);
+    #include "hw3_output.hpp"
 %}
 
 %token VOID
@@ -51,8 +47,8 @@ Funcs:      /*epsilon*/     {output::printProductionRule(2);}
 FuncDecl:   RetType ID LPAREN Formals RPAREN LBRACE Statements RBRACE {output::printProductionRule(4);}
 ;
 
-RetType:    Type                                                 {output::printProductionRule(5);}
-            |VOID                                                {output::printProductionRule(6);}
+RetType:    Type    {$$ = new RetTypeClass($1->getType();)}                                                 {output::printProductionRule(5);}
+            |VOID   {$$ = new RetTypeClass("VOID"); }                                             {output::printProductionRule(6);}
 ;
 Formals:	 /*epsilon*/                                         {output::printProductionRule(7);}
 			|FormalsList                                         {output::printProductionRule(8);}
@@ -91,11 +87,11 @@ Call:		ID LPAREN ExpList RPAREN                             {output::printProduc
 ExpList:	Exp                                                   {output::printProductionRule(29);}
 			|Exp COMMA ExpList                                    {output::printProductionRule(30);}
 ;
-Type:	    INT                                                   {output::printProductionRule(31);}
-    		|BYTE                                                 {output::printProductionRule(32);}
-    		|BOOL                                                 {output::printProductionRule(33);}
+Type:	    INT   {$$ = new TypeClass("INT");}                                           {output::printProductionRule(31);}
+    		|BYTE {$$ = new TypeClass("BYTE");}                                                  {output::printProductionRule(32);}
+    		|BOOL {$$ = new TypeClass("BOOL");}                                                 {output::printProductionRule(33);}
 ;
-Exp: 	    ID                                                   {output::printProductionRule(36);}
+Exp: 	    ID                                                    {output::printProductionRule(36);}
     		|Call                                                 {output::printProductionRule(37);}
     		|NUM                                                  {output::printProductionRule(38);}
     		|NUM B                                                {output::printProductionRule(39);}
