@@ -28,22 +28,25 @@ public:
     TableScope();
     ~TableScope();
     void pushEntry(std::string id, int offset, std::string type, bool isFunc = false,
-               std::vector<std::string> argsTypes = std::vector<std::string>());
+                   std::vector<std::string> argsTypes = std::vector<std::string>());
     void popEntry();
 };
 
 class SymbolTable {
 private:
     std::list<TableScope> scopes;
+    int offset;
 public:
     SymbolTable();
     ~SymbolTable();
     void pushScope();
     void popScope();
+    TableScope& getTopScope();
+    //TODO: ADD A FIND FUNCTION!!! --> return pointer to the right entry if var exist. if not --> returns null.
+    //offset management
+    void decOffset();
+    void incOffset();
+    int getOffset();
 };
 
-
-class offset {
-
-};
 #endif //_SYMBOL_TABLE_

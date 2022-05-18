@@ -4,16 +4,17 @@
 #include <iostream>
 #include <vector>
 
-typedef std::pair<std::string,std::string> FuncArg;
-
 class BaseClass {
 public:
     BaseClass();
     virtual ~BaseClass();
     virtual std::string getType() {std::cout << "error with getType()!" << std::endl;}
     virtual std::string getId() {std::cout << "error with getId()!" << std::endl;}
-    virtual std::vector<FuncArg> getArgsVector() {std::cout << "error with getArgsVector()!" << std::endl;}
-    virtual FuncArg getArg() {std::cout << "error with getArg()!" << std::endl;}
+    virtual std::vector<std::string> getArgsType() {std::cout << "error with getArgsType()!" << std::endl;}
+    virtual std::vector<std::string> getArgsID() {std::cout << "error with getArgsID()!" << std::endl;}
+    virtual void addNewArg(std::string argType, std::string argID) {std::cout << "error with addNewArg()!" << std::endl;}
+    virtual std::string getArgType() {std::cout << "error with getArgType()!" << std::endl;}
+    virtual std::string getArgID() {std::cout << "error with getArgID()!" << std::endl;}
 };
 
 class RetTypeClass : public BaseClass {
@@ -45,29 +46,38 @@ public:
 
 class FormalsClass : public BaseClass {
 private:
-    std::vector<FuncArg> args;
+    std::vector<std::string> vecArgsType;
+    std::vector<std::string> vecArgsID;
 public:
-    FormalsClass(/*TODO*/);
+    FormalsClass(std::vector<std::string> argsType = std::vector<std::string>(),
+                 std::vector<std::string> argsID = std::vector<std::string>()););
     ~FormalsClass() override;
-    std::vector<FuncArg> getArgsVector();
+    std::vector<std::string> getArgsType();
+    std::vector<std::string> getArgsID();
 };
 
 class FormalsListClass : public BaseClass {
 private:
-    std::vector<FuncArg> args;
+    std::vector<std::string> vecArgsType;
+    std::vector<std::string> vecArgsID;
 public:
-    FormalsListClass(/*TODO*/);
+    FormalsListClass(std::vector<std::string> argsType = std::vector<std::string>(),
+                     std::vector<std::string> argsID = std::vector<std::string>());
     ~FormalsListClass() override;
-    std::vector<FuncArg> getArgsVector();
+    std::vector<std::string> getArgsType();
+    std::vector<std::string> getArgsID();
+    void addNewArg(std::string argType, std::string argID);
 };
 
 class FormalDeclClass : public BaseClass {
 private:
-    FuncArg arg;
+    std::string argType;
+    std::string argID;
 public:
     FormalDeclClass(std::string type, std::string id);
     ~FormalDeclClass() override;
-    FuncArg getArg();
+    std::string getArgType();
+    std::string getArgID();
 };
 
 
