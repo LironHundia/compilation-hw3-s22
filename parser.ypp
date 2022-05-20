@@ -45,9 +45,10 @@ Funcs:      /*epsilon*/
             |FuncDecl Funcs
 ;
 
-FuncDecl:   RetType ID LPAREN Formals RPAREN  /*add func dec to table*/
-            LBRACE /*open scope*/ /*add func args as neg entries*/
-            Statements /*close scope*/ RBRACE
+FuncDecl:   RetType ID LPAREN Formals RPAREN  {addFuncNewEntry($2->getId(),$1->getType(),$4->getVecArgsType());}
+            LBRACE {openScope(); addFuncArgsToTable($4->getVecArgsType(),$4->getVecArgsID());} /*add func args as neg entries*/
+            Statements {closeScope();}
+            RBRACE
 ;
 
 RetType:    Type                            {$$ = new RetTypeClass($1->getType();)}
@@ -68,27 +69,27 @@ Statements:	Statement
 			|Statements Statement
 ;
 
-Statement:	Type ID SC                                           {output::printProductionRule(15);}
-			|Type ID ASSIGN Exp SC                               {output::printProductionRule(16);}
-			|AUTO ID ASSIGN Exp SC                               {output::printProductionRule(17);}
-			|ID ASSIGN Exp SC                                    {output::printProductionRule(18);}
-			|Call SC                                             {output::printProductionRule(19);}
-			|RETURN SC                                           {output::printProductionRule(20);}
-			|RETURN Exp SC                                       {output::printProductionRule(21);}
-			|BREAK SC                                            {output::printProductionRule(25);}
-			|CONTINUE SC                                         {output::printProductionRule(26);}
-            |IF LPAREN Exp RPAREN Statement                      {output::printProductionRule(22);}
-			|IF LPAREN Exp RPAREN Statement ELSE Statement       {output::printProductionRule(23);}
-			|WHILE LPAREN Exp RPAREN Statement                   {output::printProductionRule(24);}
-            |LBRACE Statements RBRACE                            {output::printProductionRule(14);}
+Statement:	Type ID SC              {addVarNewEntry($2->getId(),$1->gedType());}
+			|Type ID ASSIGN Exp SC  //TODO - need to make sure the type of Exp matches this Type for assignment
+			|AUTO ID ASSIGN Exp SC //TODO - ID gets the type of Exp
+			|ID ASSIGN Exp SC      //TODO - need to find ID in table and make sure it's and Exp's types match.
+			|Call SC
+			|RETURN SC
+			|RETURN Exp SC
+			|BREAK SC
+			|CONTINUE SC
+            |IF LPAREN Exp RPAREN Statement
+			|IF LPAREN Exp RPAREN Statement ELSE Statement
+			|WHILE LPAREN Exp RPAREN Statement
+            |LBRACE Statements RBRACE
 ;
 
-Call:		ID LPAREN ExpList RPAREN                             {output::printProductionRule(27);}
-			|ID LPAREN RPAREN                                    {output::printProductionRule(28);}
+Call:		ID LPAREN ExpList RPAREN
+			|ID LPAREN RPAREN
 ;
 
-ExpList:	Exp                                                   {output::printProductionRule(29);}
-			|Exp COMMA ExpList                                    {output::printProductionRule(30);}
+ExpList:	Exp
+			|Exp COMMA ExpList
 ;
 
 Type:	    INT   {$$ = new TypeClass("INT");}
@@ -99,12 +100,12 @@ Type:	    INT   {$$ = new TypeClass("INT");}
 Exp: 	    ID                      {$$ = new ExpClass(getIdType($1->getId()));}
     		|Call
     		|NUM                    {$$ = new ExpClass("INT",$1->getValue());}
-    		|NUM B                  {checkIfBValid($1->getValue());  $$ = new ExpClass("BYTE",$1->getValue());}                                          {output::printProductionRule(39);}
+    		|NUM B                  {checkIfBValid($1->getValue());  $$ = new ExpClass("BYTE",$1->getValue());}
     		|STRING                 {$$ = new ExpClass("STRING");}
     		|TRUE                   {$$ = new ExpClass("BOOL");}
-    		|FALSE                  {$$ = new ExpClass("BOOL");}                                            {output::printProductionRule(42);}
-    		|NOT Exp                {checkIfBool($2->getType()); $$ = new ExpClass("BOOL");}                                            {output::printProductionRule(43);}
-    		|Exp OR Exp             {checkIfBool($1->getType()); checkIfBool($3->getType()); $$ = new ExpClass("BOOL");}                                           {output::printProductionRule(45);}
+    		|FALSE                  {$$ = new ExpClass("BOOL");}
+    		|NOT Exp                {checkIfBool($2->getType()); $$ = new ExpClass("BOOL");}
+    		|Exp OR Exp             {checkIfBool($1->getType()); checkIfBool($3->getType()); $$ = new ExpClass("BOOL");}
     		|Exp AND Exp            {checkIfBool($1->getType()); checkIfBool($3->getType()); $$ = new ExpClass("BOOL");}
     		|Exp RELOP_EQUAL Exp    {checkIfNumeric($1->getType()); checkIfNumeric($3->getType()); $$ = new ExpClass("BOOL");}
             |Exp RELOP_GLT Exp      {checkIfNumeric($1->getType()); checkIfNumeric($3->getType()); $$ = new ExpClass("BOOL");}

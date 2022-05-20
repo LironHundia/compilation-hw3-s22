@@ -27,7 +27,8 @@ private:
 public:
     TableScope();
     ~TableScope();
-    void pushEntry(TableEntry newEntry);
+    void pushEntry(std::string id, int offset, std::string type, bool isFunc = false,
+                   std::vector<std::string> argsTypes = std::vector<std::string>());
     void popEntry();
     TableEntry* findEntryInScope(std::string id);
 };

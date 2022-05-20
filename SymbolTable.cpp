@@ -22,11 +22,11 @@ TableScope::TableScope() : entries(std::list<TableEntry>()){}
 
 void TableScope::pushEntry(std::string id, int offset, std::string type, bool isFunc, std::vector<std::string> argsTypes) {
     TableEntry newEntry(id, offset, type, isFunc, argsTypes);
-    entries.pushback(newEntry);
+    entries.push_back(newEntry);
 }
 
 void TableScope::popEntry() {
-    entries.popback();
+    entries.pop_back();
 }
 
 TableEntry* TableScope::findEntryInScope(std::string id) {
@@ -44,10 +44,10 @@ SymbolTable::SymbolTable() : scopes(std::list<TableScope>()) , offset(0) {}
 
 void SymbolTable::pushScope() {
     TableScope newScope;
-    scopes.pushback(newScope);
+    scopes.push_back(newScope);
 }
 void SymbolTable::popScope() {
-    scopes.popback();
+    scopes.pop_back();
 }
 
 TableScope& SymbolTable::getTopScope() {

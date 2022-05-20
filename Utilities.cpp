@@ -50,26 +50,82 @@ std::string getIdType(std::string id) {
     return entryOfId->getType();
 }
 
-void addNewEntry(std::string id, std::string type, bool isFunc, std::vector<std::string> argsTypes) {
-    TableEntry* entryOfId = symbolTable.findEntryInTable(id);
-
+//adding variable to symbolTable
+void addVarNewEntry(std::string id, std::string type) {
+    TableEntry* entryOfId = symbolTable.findEntryInTable(id); //check its not already exist
     if (entryOfId != nullptr) {
         output::errorDef(yylineno,id);
         exit(0);
     }
-    TableScope topScope = symbolTable.getTopScope();
-    if (isFunc) {
-        TableEntry newEntry(id, 0, type, isFunc, argsTypes);
-    }
-    else {
-        TableEntry newEntry(id, symbolTable.getOffset(), type, isFunc, argsTypes);
-        symbolTable.incOffset();
-    }
-    topScope.pushEntry(newEntry);
+	TableScope& topScope = symbolTable.getTopScope();
+	topScope.pushEntry(id, symbolTable.getOffset(), type);
+	symbolTable.incOffset();
 }
 
+//adding function to symbolTable
+void addFuncNewEntry(std::string id, std::string retType, std::vector<std::string> vecArgsType) {
+    TableEntry* entryOfId = symbolTable.findEntryInTable(id); //check its not already exist
+    if (entryOfId != nullptr) {
+        output::errorDef(yylineno,id);
+        exit(0);
+    }
+    //need to change the diractions of the args in the vector.
+    std::vector<std::string> reverseArgs;
+    for (std::vector<std::string>::reverse_iterator it = vecArgsType.rbegin(); it != vecArgsType.rend(); ++it) {
+        reverseArgs.push_back(*it);
+    }
+    //push final result to table
+    TableScope& topScope = symbolTable.getTopScope();
+    topScope.pushEntry(id, 0, retType, true, reverseArgs);
+}
 
+//adding functions arguments to the new function scope
+void addFuncArgsToTable(std::vector<std::string> vecArgsType, std::vector<std::string> vecArgsId) {
+    //should be the same size
+    assert(vecArgsType.size() == vecArgsId.size());
+    checkValidArgs(vecArgsId); //see description above the function implementation
+    if (!vecArgsType.empty()){ //case there is at least 1 argument
+       TableScope& topScope = symbolTable.getTopScope();
+       int argOffset = -1; //ensures that their indexes are negative order.
+       for (size_t i = (vecArgsType.size() - 1); i >= 0; i--) { //need to switch the order.
+          topScope.pushEntry(vecArgsId[i], argOffset, vecArgsType[i]);
+          arg_offset--;
+          if (i == 0){
+              break;
+          }
+       }
+    }
+}
 
+//helper function - check that there are not same ID in func declaration / in table already
+void checkValidArgs(std::vector<std::string>& vecArgsId) {
+    //check there is not same id in signature
+	for (size_t i = 0; i < vecArgsId.size(); i++) {
+		for (size_t j = i + 1; j < vecArgsId.size(); j++) {
+			if (vecArgsId[i] == vecArgsId[j]) {
+				output::errorDef(yylineno, args_names[i]);
+				exit(0);
+			}
+		}
+	}
+    //check there is not same id in symbolTable
+	for (std::vector<std::string>::iterator it = vecArgsId.begin(); it != vecArgsId.end(); ++it) {
+		if (symbolTable.findEntryInTable(*it) != nullptr) {
+			output::errorDef(yylineno, *it);
+			exit(0);
+		}
+	}
+}
+
+void openScope() {
+  symbolTable.pushScope();
+}
+
+void closeScope() {
+  output::endScope();
+  //need to print the scope's content
+  symbolTable.popScope();
+}
 
 
 
