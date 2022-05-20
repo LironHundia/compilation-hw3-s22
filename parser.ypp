@@ -1,5 +1,6 @@
 %{
     #include "hw3_output.hpp"
+    #include "Utilities.hpp"
 %}
 
 %token VOID
@@ -37,32 +38,34 @@
 
 %%
 //rules
-Program:    Funcs           {output::printProductionRule(1);}
+Program:    Funcs
 ;
 
-Funcs:      /*epsilon*/     {output::printProductionRule(2);}
-            |FuncDecl Funcs {output::printProductionRule(3);}
+Funcs:      /*epsilon*/
+            |FuncDecl Funcs
 ;
 
-FuncDecl:   RetType ID LPAREN Formals RPAREN LBRACE Statements RBRACE {output::printProductionRule(4);}
+FuncDecl:   RetType ID LPAREN Formals RPAREN  /*add func dec to table*/
+            LBRACE /*open scope*/ /*add func args as neg entries*/
+            Statements /*close scope*/ RBRACE
 ;
 
-RetType:    Type    {$$ = new RetTypeClass($1->getType();)}                                                 {output::printProductionRule(5);}
-            |VOID   {$$ = new RetTypeClass("VOID"); }                                             {output::printProductionRule(6);}
+RetType:    Type                            {$$ = new RetTypeClass($1->getType();)}
+            |VOID                           {$$ = new RetTypeClass("VOID"); }
 ;
-Formals:	 /*epsilon*/                                         {output::printProductionRule(7);}
-			|FormalsList                                         {output::printProductionRule(8);}
-;
-
-FormalsList: FormalDecl                                          {output::printProductionRule(9);}
-			|FormalDecl COMMA FormalsList                        {output::printProductionRule(10);}
+Formals:	 /*epsilon*/                    {$$ = new FormalsClass();}
+			|FormalsList                    {$$ = new FormalsClass($1->getVecArgsType(),$1->getVecArgsID());}
 ;
 
-FormalDecl:	Type ID                                              {output::printProductionRule(11);}
+FormalsList: FormalDecl                     {$$ = new FormalsListClass(); $$->addNewArg($1->getArgType(),$1->getArgID());}
+			|FormalDecl COMMA FormalsList   {$$ = new FormalsListClass($3->getVecArgsType(),$3->getVecArgsID()); $$->addNewArg($1->getArgType(),$1->getArgID());}
 ;
 
-Statements:	Statement                                            {output::printProductionRule(12);}
-			|Statements Statement                                {output::printProductionRule(13);}
+FormalDecl:	Type ID                         {$$ = new FormalDeclClass($1->getType(),$2->getId()); }
+;
+
+Statements:	Statement
+			|Statements Statement
 ;
 
 Statement:	Type ID SC                                           {output::printProductionRule(15);}
@@ -87,29 +90,31 @@ Call:		ID LPAREN ExpList RPAREN                             {output::printProduc
 ExpList:	Exp                                                   {output::printProductionRule(29);}
 			|Exp COMMA ExpList                                    {output::printProductionRule(30);}
 ;
-Type:	    INT   {$$ = new TypeClass("INT");}                                           {output::printProductionRule(31);}
-    		|BYTE {$$ = new TypeClass("BYTE");}                                                  {output::printProductionRule(32);}
-    		|BOOL {$$ = new TypeClass("BOOL");}                                                 {output::printProductionRule(33);}
-;
-Exp: 	    ID                                                    {output::printProductionRule(36);}
-    		|Call                                                 {output::printProductionRule(37);}
-    		|NUM                                                  {output::printProductionRule(38);}
-    		|NUM B                                                {output::printProductionRule(39);}
-    		|STRING                                               {output::printProductionRule(40);}
-    		|TRUE                                                 {output::printProductionRule(41);}
-    		|FALSE                                                {output::printProductionRule(42);}
-    		|NOT Exp                                              {output::printProductionRule(43);}
-    		|Exp OR Exp                                           {output::printProductionRule(45);}
-    		|Exp AND Exp                                          {output::printProductionRule(44);}
-    		|Exp RELOP_EQUAL Exp                                  {output::printProductionRule(46);}
-            |Exp RELOP_GLT Exp                                    {output::printProductionRule(46);}
-            |Exp BINOP_ADD Exp                                    {output::printProductionRule(35);}
-            |Exp BINOP_MUL Exp                                    {output::printProductionRule(35);}
-    		|LPAREN Type RPAREN Exp                               {output::printProductionRule(47);}
-            |LPAREN Exp RPAREN                                    {output::printProductionRule(34);}
+
+Type:	    INT   {$$ = new TypeClass("INT");}
+    		|BYTE {$$ = new TypeClass("BYTE");}
+    		|BOOL {$$ = new TypeClass("BOOL");}
 ;
 
+Exp: 	    ID                      {$$ = new ExpClass(getIdType($1->getId()));}
+    		|Call
+    		|NUM                    {$$ = new ExpClass("INT",$1->getValue());}
+    		|NUM B                  {checkIfBValid($1->getValue());  $$ = new ExpClass("BYTE",$1->getValue());}                                          {output::printProductionRule(39);}
+    		|STRING                 {$$ = new ExpClass("STRING");}
+    		|TRUE                   {$$ = new ExpClass("BOOL");}
+    		|FALSE                  {$$ = new ExpClass("BOOL");}                                            {output::printProductionRule(42);}
+    		|NOT Exp                {checkIfBool($2->getType()); $$ = new ExpClass("BOOL");}                                            {output::printProductionRule(43);}
+    		|Exp OR Exp             {checkIfBool($1->getType()); checkIfBool($3->getType()); $$ = new ExpClass("BOOL");}                                           {output::printProductionRule(45);}
+    		|Exp AND Exp            {checkIfBool($1->getType()); checkIfBool($3->getType()); $$ = new ExpClass("BOOL");}
+    		|Exp RELOP_EQUAL Exp    {checkIfNumeric($1->getType()); checkIfNumeric($3->getType()); $$ = new ExpClass("BOOL");}
+            |Exp RELOP_GLT Exp      {checkIfNumeric($1->getType()); checkIfNumeric($3->getType()); $$ = new ExpClass("BOOL");}
+            |Exp BINOP_ADD Exp      {std::string newType = setRetBinopType($1->getType(),$3->getType()); $$ = new ExpClass(newType);}
+            |Exp BINOP_MUL Exp      {std::string newType = setRetBinopType($1->getType(),$3->getType()); $$ = new ExpClass(newType);}
+    		|LPAREN Type RPAREN Exp {checkIfNumeric($2->getType()); checkIfNumeric($4->getType()); $$ = new ExpClass($2->getType());}
+            |LPAREN Exp RPAREN      {$$ = new ExpClass($2->getType(),$2->getValue());}
+;
 %%
+
 void yyerror(const char* input) {
     output::errorSyn(yylineno);
     exit(0);

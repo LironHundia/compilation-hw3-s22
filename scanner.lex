@@ -39,7 +39,7 @@ continue                    return CONTINUE;
 [\+|\-]                     return BINOP_ADD;
 [\*|\/]                     return BINOP_MUL;
 [a-zA-Z][a-zA-Z0-9]*        yylval = new IDClass(yytext); return ID;
-0|[1-9][0-9]*               return NUM;
+0|[1-9][0-9]*               yylval = new NUMClass(yytext); return NUM;
 \"([^\n\r\"\\]|\\[rnt"\\])+\" return STRING;
 
 \/\/[^\r\n]*[\r|\n|\r\n]?   ;
