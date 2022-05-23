@@ -20,7 +20,7 @@ public:
     std::string& getType();
 	std::string setType(std::string newType);
     bool getIsFunc();
-    std::vector<std::string> getArgTypes();
+    std::vector<std::string> getVecArgsTypes();
 };
 
 #endif //_TABLE_ENTRY_

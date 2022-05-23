@@ -1,5 +1,6 @@
 #include "Utilities.hpp"
 #include "hw3_output.hpp"
+#include <algorithm>
 
 SymbolTable symbolTable;
 int WhileCounter = 0;
@@ -96,13 +97,13 @@ void addFuncNewEntry(std::string id, std::string retType, std::vector<std::strin
         exit(0);
     }
     //need to change the diractions of the args in the vector.
-    std::vector<std::string> reverseArgs;
-    for (std::vector<std::string>::reverse_iterator it = vecArgsType.rbegin(); it != vecArgsType.rend(); ++it) {
+    std::reverse(vecArgsType.begin(), vecArgsType.end());
+    /*for (std::vector<std::string>::reverse_iterator it = vecArgsType.rbegin(); it != vecArgsType.rend(); ++it) {
         reverseArgs.push_back(*it);
-    }
+    }*/
     //push final result to table
     TableScope& topScope = symbolTable.getTopScope();
-    topScope.pushEntry(id, 0, retType, true, reverseArgs);
+    topScope.pushEntry(id, 0, retType, true, vecArgsType);
 }
 
 //adding functions arguments to the new function scope
@@ -167,7 +168,26 @@ void decWhileCounter() {
     WhileCounter--;
 }
 
+std::string checkFuncCall(std::string funcId, std::vector<std::string> vecArgsTypes) {
+    TableEntry* funcEntry = symbolTable.getFirstScope().findEntryInScope(funcId); //checking specifically in the "func scope"
+    if (funcEntry == nullptr || funcEntry->getIsFunc() == false) {
+        output::errorUndefFunc(yylineno, funcId);
+        exit(0);
+    }
+    std::vector<std::string> vecFuncTypes = funcEntry->getVecArgsTypes(); //already reversed!!!
+    std::reverse(vecArgsTypes.begin(), vecArgsTypes.end());
 
+    if (vecFuncTypes.size() != vecArgsTypes.size()) {
+        output::errorPrototypeMismatch(yylineno, funcId, vecFuncTypes);
+    }
+
+    for (int i = 0; i < vecFuncTypes.size(); i++) {
+        if(vecFuncTypes[i] != vecArgsTypes[i]) {
+            output::errorPrototypeMismatch(yylineno, funcId, vecFuncTypes);
+        }
+    }
+    return funcEntry->getType();
+}
 
 
 //test

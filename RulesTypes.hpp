@@ -16,6 +16,7 @@ public:
     virtual std::string getArgType() {std::cout << "error with getArgType()!" << std::endl;}
     virtual std::string getArgID() {std::cout << "error with getArgID()!" << std::endl;}
     virtual std::string getValue() {std::cout << "error with getValue()!" << std::endl;}
+    virtual void addNewArgType(std::string argType) {std::cout << "error with addNewArgType()!" << std::endl;}
 };
 
 class RetTypeClass : public BaseClass {
@@ -100,5 +101,26 @@ public:
     ~NUMClass() = default;
     std::string getValue() override;
 };
+
+class CallClass : public BaseClass {
+private:
+    std::string type;
+public:
+    CallClass(std::string type);
+    ~CallClass() = default;
+    std::string getType() override;
+};
+
+class ExpListClass : public BaseClass {
+private:
+    std::vector<std::string> vecArgsType;
+public:
+    ExpListClass(std::vector<std::string> vecArgsType = std::vector<std::string>());
+    ~ExpListClass() = default;
+    std::vector<std::string> getVecArgsType() override;
+    void addNewArgType(std::string argType) override;
+};
+
+
 
 #endif //_RULES_TYPES_

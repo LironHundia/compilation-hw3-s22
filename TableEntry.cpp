@@ -14,6 +14,6 @@ std::string& TableEntry::getType() {
 bool TableEntry::getIsFunc() {
     return isFunc;
 }
-std::vector<std::string> TableEntry::getArgTypes() {
+std::vector<std::string> TableEntry::getVecArgsTypes() {
     return argsTypes;
 }

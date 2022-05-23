@@ -21,5 +21,6 @@ void openScope();
 void closeScope();
 void incWhileCounter();
 void decWhileCounter();
+std::string checkFuncCall(std::string funcId, std::vector<std::string> vecArgsTypes = std::vector<std::string>());
 
 #endif //_UTILITIES_

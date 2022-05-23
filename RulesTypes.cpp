@@ -47,3 +47,18 @@ NUMClass::NUMClass(std::string value) : value(value) {}
 std::string NUMClass::getValue() {
     return value;
 }
+
+
+CallClass::CallClass(std::string type) : type(type) {}
+std::string CallClass::getType() {
+    return type;
+}
+
+
+ExpListClass::ExpListClass(std::vector<std::string> vecArgsType) : vecArgsType(vecArgsType) {}
+std::vector<std::string> ExpListClass::getVecArgsType() {
+    return vecArgsType;
+}
+void ExpListClass::addNewArgType(std::string argType) {
+    vecArgsType.push_back(argType);
+}

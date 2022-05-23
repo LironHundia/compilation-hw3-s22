@@ -74,23 +74,25 @@ Statement:	Type ID SC              {addVarNewEntry($2->getId(),$1->getType());}
 			|Type ID ASSIGN Exp SC  {checkIfAssignValidByType($1->getType(), $4->getType()); addVarNewEntry($2->getId(),$1->getType());}
 			|AUTO ID ASSIGN Exp SC 	{addVarNewEntry($2->getId(),$4->getType());}
 			|ID ASSIGN Exp SC     	{checkIfAssignValidByType(getIdType($1->getId()), $3->getType());}//checks also if id already exists
-			|Call SC				{}
+			|Call SC
 			|RETURN SC				{checkReturnType("VOID");}
 			|RETURN Exp SC			{checkReturnType($2->getType());}
 			|BREAK SC				{checkIfBreakValid();}
 			|CONTINUE SC			{checkIfContinueValid();}
-            |IF LPAREN Exp RPAREN Statement
-			|IF LPAREN Exp RPAREN Statement ELSE Statement
+            |IF LPAREN Exp RPAREN {openScope(); checkIfBool($3->getType());} Statement {closeScope();} IfElse
 			|WHILE LPAREN Exp RPAREN {openScope(); checkIfBool($3->getType()); incWhileCounter();} Statement {closeScope(); decWhileCounter();}
-            |LBRACE Statements RBRACE
+            |LBRACE {openScope();} Statements RBRACE {closeScope();}
+;
+IfElse:     /*epsilon*/ %prec ASSIGN
+            |ELSE {openScope();} Statement {closeScope();}
 ;
 
-Call:		ID LPAREN ExpList RPAREN
-			|ID LPAREN RPAREN
+Call:		ID LPAREN ExpList RPAREN {std::string funcRetType = checkFuncCall($1->getId(), $3->getVecArgsType()); $$ = new CallClass(funcRetType); }
+			|ID LPAREN RPAREN {std::string funcRetType = checkFuncCall($1->getId()); $$ = new CallClass(funcRetType); }
 ;
 
-ExpList:	Exp
-			|Exp COMMA ExpList
+ExpList:	Exp                     {$$ = new ExpListClass(); $$->addNewArgType($1->getArgType());}
+			|Exp COMMA ExpList      {$$ = new ExpListClass($3->getVecArgsType()); $$->addNewArgType($1->getArgType());}
 ;
 
 Type:	    INT   {$$ = new TypeClass("INT");}
@@ -99,7 +101,7 @@ Type:	    INT   {$$ = new TypeClass("INT");}
 ;
 
 Exp: 	    ID                      {$$ = new ExpClass(getIdType($1->getId()));}//checks also if id already exists
-    		|Call
+    		|Call                   {$$ = new ExpClass($1->getType());}
     		|NUM                    {$$ = new ExpClass("INT",$1->getValue());}
     		|NUM B                  {checkIfBValid($1->getValue());  $$ = new ExpClass("BYTE",$1->getValue());}
     		|STRING                 {$$ = new ExpClass("STRING");}
