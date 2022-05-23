@@ -1,4 +1,5 @@
 #include "RulesTypes.hpp"
+#include <string>
 
 RetTypeClass::RetTypeClass(std::string type) : type(type) {}
 std::string RetTypeClass::getType() {return type;}
@@ -10,31 +11,39 @@ IDClass::IDClass(std::string id) : id(id) {}
 std::string IDClass::getId() {return id;}
 
 
-FormalsClass::FormalsClass(std::vector<std::string> argsType = std::vector<std::string>(),
-                           std::vector<std::string> argsID = std::vector<std::string>()) : vecArgsType(argsType), vecArgsID(argsID) {}
-//FormalsClass::~FormalsClass() = default;
-std::vector<std::string> FormalsClass::getArgsType() {return vecArgsType;}
-std::vector<std::string> FormalsClass::getArgsID() {return vecArgsID;}
+FormalsClass::FormalsClass(std::vector<std::string> argsType, std::vector<std::string> argsID) : vecArgsType(argsType), vecArgsID(argsID) {}
+std::vector<std::string> FormalsClass::getVecArgsType() {return vecArgsType;}
+std::vector<std::string> FormalsClass::getVecArgsID() {return vecArgsID;}
 
 
-FormalsListClass::FormalsListClass(std::vector<std::string> argsType = std::vector<std::string>(),
-                           std::vector<std::string> argsID = std::vector<std::string>()) : vecArgsType(argsType), vecArgsID(argsID) {}
-//FormalsListClass::~FormalsListClass() = default;
-std::vector<std::string> FormalsListClass::getArgsType() {return vecArgsType;}
-std::vector<std::string> FormalsListClass::getArgsID() {return vecArgsID;}
+FormalsListClass::FormalsListClass(std::vector<std::string> argsType, std::vector<std::string> argsID) : vecArgsType(argsType), vecArgsID(argsID) {}
+std::vector<std::string> FormalsListClass::getVecArgsType() {return vecArgsType;}
+std::vector<std::string> FormalsListClass::getVecArgsID() {return vecArgsID;}
 void FormalsListClass::addNewArg(std::string argType, std::string argID)
 {
-    vecArgsType.pushback(argType);
-    vecArgsID.pushback(argID);
+    vecArgsType.push_back(argType);
+    vecArgsID.push_back(argID);
 }
 
 FormalDeclClass::FormalDeclClass(std::string type, std::string id) : argType(type), argID(id) {}
-FormalDeclClass::~FormalDeclClass() = default;
-std::string FormalDeclClass::getArgType() {return argType;}
-std::string FormalDeclClass::getArgID() {return argID;}
+std::string FormalDeclClass::getArgType() {
+    return argType;
+}
+std::string FormalDeclClass::getArgID() {
+    return argID;
+}
 
 
+ExpClass::ExpClass(std::string type, std::string value) : type(type), value(value) {}
+std::string ExpClass::getType() {
+    return type;
+}
+std::string ExpClass::getValue() {
+    return value;
+}
 
 
-
-#endif //_RULES_TYPES_
+NUMClass::NUMClass(std::string value) : value(value) {}
+std::string NUMClass::getValue() {
+    return value;
+}

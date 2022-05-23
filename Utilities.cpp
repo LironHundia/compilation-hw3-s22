@@ -2,6 +2,9 @@
 #include "hw3_output.hpp"
 
 SymbolTable symbolTable;
+int WhileCounter = 0;
+static TableEntry& getCurrFunc();
+
 
 void checkIfBValid(std::string value) {
     try {
@@ -12,7 +15,7 @@ void checkIfBValid(std::string value) {
         }
     }
     catch (...) {
-        sdt::cout << "recieved exception in checkIfBValid!" << std::endl;
+        std::cout << "recieved exception in checkIfBValid!" << std::endl;
         exit(1);
     }
     return;
@@ -30,6 +33,29 @@ void checkIfNumeric(std::string type) {
         output::errorMismatch(yylineno);
         exit(0);
     }
+}
+
+void checkIfAssignValidByType(std::string dstType, std::string srcType){
+	if(dstType != srcType){
+		if ((dstType != "INT") && (srcType == "BYTE")) {
+			output::errorMismatch(yylineno);
+			exit(0);
+		}
+	}
+}
+
+void checkIfBreakValid(){
+	if(WhileCounter == 0){
+		output::errorUnexpectedBreak(yylineno);
+		exit(0);
+	}
+
+}
+void checkIfContinueValid(){
+	if(WhileCounter == 0){
+		output::errorUnexpectedContinue(yylineno);
+		exit(0);
+	}
 }
 
 std::string setRetBinopType(std::string typeLeft, std::string typeRight) {
@@ -64,9 +90,9 @@ void addVarNewEntry(std::string id, std::string type) {
 
 //adding function to symbolTable
 void addFuncNewEntry(std::string id, std::string retType, std::vector<std::string> vecArgsType) {
-    TableEntry* entryOfId = symbolTable.findEntryInTable(id); //check its not already exist
-    if (entryOfId != nullptr) {
-        output::errorDef(yylineno,id);
+    TableEntry* entryOfId = symbolTable.findEntryInTable(id);
+    if (entryOfId == nullptr) {
+        output::errorUndef(yylineno, id);
         exit(0);
     }
     //need to change the diractions of the args in the vector.
@@ -82,14 +108,13 @@ void addFuncNewEntry(std::string id, std::string retType, std::vector<std::strin
 //adding functions arguments to the new function scope
 void addFuncArgsToTable(std::vector<std::string> vecArgsType, std::vector<std::string> vecArgsId) {
     //should be the same size
-    assert(vecArgsType.size() == vecArgsId.size());
     checkValidArgs(vecArgsId); //see description above the function implementation
     if (!vecArgsType.empty()){ //case there is at least 1 argument
        TableScope& topScope = symbolTable.getTopScope();
        int argOffset = -1; //ensures that their indexes are negative order.
        for (size_t i = (vecArgsType.size() - 1); i >= 0; i--) { //need to switch the order.
           topScope.pushEntry(vecArgsId[i], argOffset, vecArgsType[i]);
-          arg_offset--;
+          argOffset--;
           if (i == 0){
               break;
           }
@@ -103,7 +128,7 @@ void checkValidArgs(std::vector<std::string>& vecArgsId) {
 	for (size_t i = 0; i < vecArgsId.size(); i++) {
 		for (size_t j = i + 1; j < vecArgsId.size(); j++) {
 			if (vecArgsId[i] == vecArgsId[j]) {
-				output::errorDef(yylineno, args_names[i]);
+				output::errorDef(yylineno, vecArgsId[i]);
 				exit(0);
 			}
 		}
@@ -117,6 +142,14 @@ void checkValidArgs(std::vector<std::string>& vecArgsId) {
 	}
 }
 
+static TableEntry& getCurrFunc(){
+	TableEntry& currFuncEntry = symbolTable.getFirstScope().topEntry();
+}
+
+void checkReturnType(std::string type){
+	checkIfAssignValidByType(getCurrFunc().getType(), type);
+}
+
 void openScope() {
   symbolTable.pushScope();
 }
@@ -127,7 +160,12 @@ void closeScope() {
   symbolTable.popScope();
 }
 
-
+void incWhileCounter() {
+    WhileCounter++;
+}
+void decWhileCounter() {
+    WhileCounter--;
+}
 
 
 

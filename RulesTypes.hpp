@@ -3,11 +3,11 @@
 
 #include <iostream>
 #include <vector>
+#include <string>
 
 class BaseClass {
 public:
-    BaseClass();
-    virtual ~BaseClass();
+    virtual ~BaseClass() = default;
     virtual std::string getType() {std::cout << "error with getType()!" << std::endl;}
     virtual std::string getId() {std::cout << "error with getId()!" << std::endl;}
     virtual std::vector<std::string> getVecArgsType() {std::cout << "error with getVecArgsType()!" << std::endl;}
@@ -23,8 +23,8 @@ private:
     std::string type;
 public:
     RetTypeClass(std::string type);
-    ~RetTypeClass() override;
-    std::string getType();
+    ~RetTypeClass() = default;
+    std::string getType() override;
 };
 
 class TypeClass : public BaseClass {
@@ -32,8 +32,8 @@ private:
     std::string type;
 public:
     TypeClass(std::string type);
-    ~TypeClass() override;
-    std::string getType();
+    ~TypeClass() = default;
+    std::string getType() override;
 };
 
 class IDClass : public BaseClass {
@@ -41,8 +41,8 @@ private:
     std::string id;
 public:
     IDClass(std::string id);
-    ~IDClass() override;
-    std::string getId();
+    ~IDClass() = default;
+    std::string getId() override;
 };
 
 class FormalsClass : public BaseClass {
@@ -51,10 +51,10 @@ private:
     std::vector<std::string> vecArgsID;
 public:
     FormalsClass(std::vector<std::string> argsType = std::vector<std::string>(),
-                 std::vector<std::string> argsID = std::vector<std::string>()););
-    ~FormalsClass() override;
-    std::vector<std::string> getVecArgsType();
-    std::vector<std::string> getVecArgsID();
+                 std::vector<std::string> argsID = std::vector<std::string>());
+    ~FormalsClass() = default;
+    std::vector<std::string> getVecArgsType() override;
+    std::vector<std::string> getVecArgsID() override;
 };
 
 class FormalsListClass : public BaseClass {
@@ -64,10 +64,10 @@ private:
 public:
     FormalsListClass(std::vector<std::string> argsType = std::vector<std::string>(),
                      std::vector<std::string> argsID = std::vector<std::string>());
-    ~FormalsListClass() override;
-    std::vector<std::string> getVecArgsType();
-    std::vector<std::string> getVecArgsID();
-    void addNewArg(std::string argType, std::string argID);
+    ~FormalsListClass() = default;
+    std::vector<std::string> getVecArgsType() override;
+    std::vector<std::string> getVecArgsID() override;
+    void addNewArg(std::string argType, std::string argID) override;
 };
 
 class FormalDeclClass : public BaseClass {
@@ -76,9 +76,9 @@ private:
     std::string argID;
 public:
     FormalDeclClass(std::string type, std::string id);
-    ~FormalDeclClass() override;
-    std::string getArgType();
-    std::string getArgID();
+    ~FormalDeclClass() = default;
+    std::string getArgType() override;
+    std::string getArgID() override;
 };
 
 class ExpClass : public BaseClass {
@@ -87,24 +87,18 @@ private:
     std::string value;
 public:
     ExpClass(std::string type, std::string value = std::string());
-    ~ExpClass() override;
-    std::string getType();
-    std::string getValue();
+    ~ExpClass() = default;
+    std::string getType() override;
+    std::string getValue() override;
 };
 
 class NUMClass : public BaseClass {
 private:
     std::string value;
 public:
-    IDClass(std::string value);
-    ~IDClass() override;
-    std::string getValue();
+    NUMClass(std::string value);
+    ~NUMClass() = default;
+    std::string getValue() override;
 };
-
-
-
-
-
-
 
 #endif //_RULES_TYPES_

@@ -3,10 +3,13 @@
 
 #include <vector>
 #include <string>
+#include "RulesTypes.hpp"
 using namespace std;
 
-#define YYSTYPE BaseClass*;
+#define YYSTYPE BaseClass*
+
 extern int yylineno;
+extern char* yytext;
 int yylex();
 void yyerror(const char* input);
 

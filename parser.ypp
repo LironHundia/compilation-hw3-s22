@@ -1,6 +1,7 @@
 %{
-    #include "hw3_output.hpp"
     #include "Utilities.hpp"
+    #include "RulesTypes.hpp"
+    #include "hw3_output.hpp"
 %}
 
 %token VOID
@@ -51,7 +52,7 @@ FuncDecl:   RetType ID LPAREN Formals RPAREN  {addFuncNewEntry($2->getId(),$1->g
             RBRACE
 ;
 
-RetType:    Type                            {$$ = new RetTypeClass($1->getType();)}
+RetType:    Type                            {$$ = new RetTypeClass($1->getType());}
             |VOID                           {$$ = new RetTypeClass("VOID"); }
 ;
 Formals:	 /*epsilon*/                    {$$ = new FormalsClass();}
@@ -69,18 +70,18 @@ Statements:	Statement
 			|Statements Statement
 ;
 
-Statement:	Type ID SC              {addVarNewEntry($2->getId(),$1->gedType());}
-			|Type ID ASSIGN Exp SC  //TODO - need to make sure the type of Exp matches this Type for assignment
-			|AUTO ID ASSIGN Exp SC //TODO - ID gets the type of Exp
-			|ID ASSIGN Exp SC      //TODO - need to find ID in table and make sure it's and Exp's types match.
-			|Call SC
-			|RETURN SC
-			|RETURN Exp SC
-			|BREAK SC
-			|CONTINUE SC
+Statement:	Type ID SC              {addVarNewEntry($2->getId(),$1->getType());}
+			|Type ID ASSIGN Exp SC  {checkIfAssignValidByType($1->getType(), $4->getType()); addVarNewEntry($2->getId(),$1->getType());}
+			|AUTO ID ASSIGN Exp SC 	{addVarNewEntry($2->getId(),$4->getType());}
+			|ID ASSIGN Exp SC     	{checkIfAssignValidByType(getIdType($1->getId()), $3->getType());}//checks also if id already exists
+			|Call SC				{}
+			|RETURN SC				{checkReturnType("VOID");}
+			|RETURN Exp SC			{checkReturnType($2->getType());}
+			|BREAK SC				{checkIfBreakValid();}
+			|CONTINUE SC			{checkIfContinueValid();}
             |IF LPAREN Exp RPAREN Statement
 			|IF LPAREN Exp RPAREN Statement ELSE Statement
-			|WHILE LPAREN Exp RPAREN Statement
+			|WHILE LPAREN Exp RPAREN {openScope(); checkIfBool($3->getType()); incWhileCounter();} Statement {closeScope(); decWhileCounter();}
             |LBRACE Statements RBRACE
 ;
 
@@ -97,7 +98,7 @@ Type:	    INT   {$$ = new TypeClass("INT");}
     		|BOOL {$$ = new TypeClass("BOOL");}
 ;
 
-Exp: 	    ID                      {$$ = new ExpClass(getIdType($1->getId()));}
+Exp: 	    ID                      {$$ = new ExpClass(getIdType($1->getId()));}//checks also if id already exists
     		|Call
     		|NUM                    {$$ = new ExpClass("INT",$1->getValue());}
     		|NUM B                  {checkIfBValid($1->getValue());  $$ = new ExpClass("BYTE",$1->getValue());}
