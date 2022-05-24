@@ -1,6 +1,6 @@
 #include "TableScope.hpp"
 
-TableScope::TableScope() : entries(std::list<TableEntry>()){}
+TableScope::TableScope() : entries(std::vector<TableEntry>()){}
 
 void TableScope::pushEntry(std::string id, int offset, std::string type, bool isFunc, std::vector<std::string> argsTypes) {
     TableEntry newEntry(id, offset, type, isFunc, argsTypes);
@@ -12,7 +12,7 @@ void TableScope::popEntry() {
 }
 
 TableEntry* TableScope::findEntryInScope(std::string id) {
-    for (std::list<TableEntry>::iterator it=entries.begin(); it != entries.end(); ++it) {
+    for (std::vector<TableEntry>::iterator it=entries.begin(); it != entries.end(); ++it) {
         //if we found a valid entry in current TableScope
         if (id == (*it).getId()) {
             return &(*it);
@@ -24,4 +24,12 @@ TableEntry* TableScope::findEntryInScope(std::string id) {
 
 TableEntry& TableScope::topEntry(){
 	return entries.back();
+}
+
+int TableScope::getScopeSize() {
+    return entries.size();
+}
+
+TableEntry* TableScope::getEntryByPos(int i) {
+    return &(entries[i]);
 }

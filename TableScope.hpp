@@ -3,13 +3,12 @@
 
 #include <iostream>
 #include <vector>
-#include <list>
 #include "TableEntry.hpp"
 
 
 class TableScope {
 private:
-    std::list<TableEntry> entries;
+    std::vector<TableEntry> entries;
 public:
     TableScope();
     ~TableScope() = default;
@@ -18,6 +17,8 @@ public:
     void popEntry();
 	TableEntry& topEntry();
     TableEntry* findEntryInScope(std::string id);
+    int getScopeSize();
+    TableEntry* getEntryByPos(int i);
 };
 
 #endif //_TABLE_SCOPE_

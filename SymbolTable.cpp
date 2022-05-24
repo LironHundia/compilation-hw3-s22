@@ -1,7 +1,7 @@
 #include "SymbolTable.hpp"
 
 
-SymbolTable::SymbolTable() : scopes(std::list<TableScope>()) , offset(0) {}
+SymbolTable::SymbolTable() : scopes(std::list<TableScope>()) {}
 
 void SymbolTable::pushScope() {
     TableScope newScope;
@@ -29,17 +29,4 @@ TableEntry* SymbolTable::findEntryInTable(std::string id) {
 
 TableScope& SymbolTable::getFirstScope(){
 	return scopes.front();
-}
-
-//offset management
-void SymbolTable::decOffset() {
-    offset -= 1;
-}
-
-void SymbolTable::incOffset() {
-    offset += 1;
-}
-
-int SymbolTable::getOffset() {
-    return offset;
 }

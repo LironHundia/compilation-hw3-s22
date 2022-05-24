@@ -8,7 +8,6 @@
 class SymbolTable {
 private:
     std::list<TableScope> scopes;
-    int offset;
 public:
     SymbolTable();
     ~SymbolTable() = default;
@@ -19,10 +18,6 @@ public:
     //TODO: ADD A FIND FUNCTION!!! --> return pointer to the right entry if var exist. if not --> returns null.
     TableEntry* findEntryInTable(std::string id);
 	TableScope& getFirstScope();
-    //offset management
-    void decOffset();
-    void incOffset();
-    int getOffset();
 };
 
 #endif //_SYMBOL_TABLE_

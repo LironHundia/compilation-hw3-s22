@@ -1,8 +1,10 @@
 #include "Utilities.hpp"
 #include "hw3_output.hpp"
+#include "OffsetTable.hpp"
 #include <algorithm>
 
 SymbolTable symbolTable;
+OffsetTable offset;
 int WhileCounter = 0;
 static TableEntry& getCurrFunc();
 
@@ -37,12 +39,23 @@ void checkIfNumeric(std::string type) {
 }
 
 void checkIfAssignValidByType(std::string dstType, std::string srcType){
-	if(dstType != srcType){
-		if ((dstType != "INT") && (srcType == "BYTE")) {
-			output::errorMismatch(yylineno);
-			exit(0);
-		}
+	if(!checkTypeMatch(dstType,srcType)) {
+		output::errorMismatch(yylineno);
+		exit(0);
 	}
+}
+
+bool checkTypeMatch(std::string dstType, std::string srcType)
+{
+    if(dstType == srcType) {
+        return true;
+    }
+    else if ((dstType == "INT") && (srcType == "BYTE")) {
+        return true;
+    }
+    else {
+        return false;
+    }
 }
 
 void checkIfBreakValid(){
@@ -85,15 +98,15 @@ void addVarNewEntry(std::string id, std::string type) {
         exit(0);
     }
 	TableScope& topScope = symbolTable.getTopScope();
-	topScope.pushEntry(id, symbolTable.getOffset(), type);
-	symbolTable.incOffset();
+	topScope.pushEntry(id, offset.getOffset(), type);
+	offset.incOffset();
 }
 
 //adding function to symbolTable
 void addFuncNewEntry(std::string id, std::string retType, std::vector<std::string> vecArgsType) {
     TableEntry* entryOfId = symbolTable.findEntryInTable(id);
-    if (entryOfId == nullptr) {
-        output::errorUndef(yylineno, id);
+    if (entryOfId != nullptr) {
+        output::errorDef(yylineno, id);
         exit(0);
     }
     //need to change the diractions of the args in the vector.
@@ -153,12 +166,14 @@ void checkReturnType(std::string type){
 
 void openScope() {
   symbolTable.pushScope();
+  offset.pushOffsetScope();
 }
 
 void closeScope() {
   output::endScope();
-  //need to print the scope's content
+  printScope();
   symbolTable.popScope();
+  offset.popOffsetScope();
 }
 
 void incWhileCounter() {
@@ -182,12 +197,45 @@ std::string checkFuncCall(std::string funcId, std::vector<std::string> vecArgsTy
     }
 
     for (int i = 0; i < vecFuncTypes.size(); i++) {
-        if(vecFuncTypes[i] != vecArgsTypes[i]) {
+        if(!checkTypeMatch(vecFuncTypes[i],vecArgsTypes[i])) {
             output::errorPrototypeMismatch(yylineno, funcId, vecFuncTypes);
         }
     }
     return funcEntry->getType();
 }
+
+void checkMainExist() {
+    TableEntry* funcEntry = symbolTable.getFirstScope().findEntryInScope("main");
+    if(funcEntry == nullptr || funcEntry->getType() != "VOID" || !(funcEntry->getVecArgsTypes().empty())) {
+        output::errorMainMissing();
+    }
+}
+
+void addPrintFunctions() {
+    std::vector<std::string> printArgs;
+    std::vector<std::string> printiArgs;
+    printArgs.push_back("STRING");
+    printiArgs.push_back("INT");
+    addFuncNewEntry("print", "VOID", printArgs);
+    addFuncNewEntry("printi", "VOID", printiArgs);
+}
+
+void printScope() {
+    TableScope& topScope = symbolTable.getTopScope();
+    int scopeSize = topScope.getScopeSize();
+    for (int i = 0; i < scopeSize; i++) {
+        TableEntry* currEntry = topScope.getEntryByPos(i);
+        if(currEntry->getIsFunc() == false) {
+            output::printID(currEntry->getId(), currEntry->getOffset(), currEntry->getType());
+        }
+        else {
+            std::vector<std::string> typesToPrint = currEntry->getVecArgsTypes();
+            output::printID(currEntry->getId(), currEntry->getOffset(), output::makeFunctionType(currEntry->getType(), typesToPrint));
+        }
+    }
+}
+
+
 
 
 //test

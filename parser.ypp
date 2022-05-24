@@ -39,7 +39,7 @@
 
 %%
 //rules
-Program:    Funcs
+Program:    {openScope(); addPrintFunctions();} Funcs {checkMainExist(); closeScope();}
 ;
 
 Funcs:      /*epsilon*/
