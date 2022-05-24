@@ -184,6 +184,7 @@ void decWhileCounter() {
 }
 
 std::string checkFuncCall(std::string funcId, std::vector<std::string> vecArgsTypes) {
+
     TableEntry* funcEntry = symbolTable.getFirstScope().findEntryInScope(funcId); //checking specifically in the "func scope"
     if (funcEntry == nullptr || funcEntry->getIsFunc() == false) {
         output::errorUndefFunc(yylineno, funcId);

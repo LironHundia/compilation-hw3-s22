@@ -87,12 +87,12 @@ IfElse:     /*epsilon*/ %prec ASSIGN
             |ELSE {openScope();} Statement {closeScope();}
 ;
 
-Call:		ID LPAREN ExpList RPAREN {std::string funcRetType = checkFuncCall($1->getId(), $3->getVecArgsType()); $$ = new CallClass(funcRetType); }
-			|ID LPAREN RPAREN {std::string funcRetType = checkFuncCall($1->getId()); $$ = new CallClass(funcRetType); }
+Call:		ID LPAREN ExpList RPAREN {std::cout <<"1"<<std::endl; std::string funcRetType = checkFuncCall($1->getId(), $3->getVecArgsType()); $$ = new CallClass(funcRetType); }
+			|ID LPAREN RPAREN {std::cout <<"2"<<std::endl; std::string funcRetType = checkFuncCall($1->getId()); $$ = new CallClass(funcRetType); }
 ;
 
-ExpList:	Exp                     {$$ = new ExpListClass(); $$->addNewArgType($1->getArgType());}
-			|Exp COMMA ExpList      {$$ = new ExpListClass($3->getVecArgsType()); $$->addNewArgType($1->getArgType());}
+ExpList:	Exp                     {std::cout <<"3"<<std::endl; $$ = new ExpListClass(); $$->addNewArgType($1->getType());}
+			|Exp COMMA ExpList      {std::cout <<"4"<<std::endl; $$ = new ExpListClass($3->getVecArgsType()); $$->addNewArgType($1->getType());}
 ;
 
 Type:	    INT   {$$ = new TypeClass("INT");}
