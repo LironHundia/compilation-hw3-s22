@@ -39,10 +39,11 @@
 
 %%
 //rules
-Program:    {openScope(); addPrintFunctions();} Funcs {checkMainExist(); closeScope();}
+Program:    {openScope(); addPrintFunctions();}
+            Funcs
 ;
 
-Funcs:      /*epsilon*/
+Funcs:      /*epsilon*/ /*{if (yychar != YYEOF) yyerror("not EOF");}*/
             |FuncDecl Funcs
 ;
 
@@ -73,7 +74,7 @@ Statements:	Statement
 Statement:	Type ID SC              {addVarNewEntry($2->getId(),$1->getType());}
 			|Type ID ASSIGN Exp SC  {checkIfAssignValidByType($1->getType(), $4->getType()); addVarNewEntry($2->getId(),$1->getType());}
 			|AUTO ID ASSIGN Exp SC 	{addVarNewEntry($2->getId(),$4->getType());}
-			|ID ASSIGN Exp SC     	{checkIfAssignValidByType(getIdType($1->getId()), $3->getType());}//checks also if id already exists
+			|ID ASSIGN Exp SC     	{checkIfAssignValidByType(getIdVarType($1->getId()), $3->getType());}//checks also if id already exists
 			|Call SC
 			|RETURN SC				{checkReturnType("VOID");}
 			|RETURN Exp SC			{checkReturnType($2->getType());}
@@ -87,12 +88,12 @@ IfElse:     /*epsilon*/ %prec ASSIGN
             |ELSE {openScope();} Statement {closeScope();}
 ;
 
-Call:		ID LPAREN ExpList RPAREN {std::cout <<"1"<<std::endl; std::string funcRetType = checkFuncCall($1->getId(), $3->getVecArgsType()); $$ = new CallClass(funcRetType); }
-			|ID LPAREN RPAREN {std::cout <<"2"<<std::endl; std::string funcRetType = checkFuncCall($1->getId()); $$ = new CallClass(funcRetType); }
+Call:		ID LPAREN ExpList RPAREN {std::string funcRetType = checkFuncCall($1->getId(), $3->getVecArgsType()); $$ = new CallClass(funcRetType); }
+			|ID LPAREN RPAREN {std::string funcRetType = checkFuncCall($1->getId()); $$ = new CallClass(funcRetType); }
 ;
 
-ExpList:	Exp                     {std::cout <<"3"<<std::endl; $$ = new ExpListClass(); $$->addNewArgType($1->getType());}
-			|Exp COMMA ExpList      {std::cout <<"4"<<std::endl; $$ = new ExpListClass($3->getVecArgsType()); $$->addNewArgType($1->getType());}
+ExpList:	Exp                     {$$ = new ExpListClass(); $$->addNewArgType($1->getType());}
+			|Exp COMMA ExpList      {$$ = new ExpListClass($3->getVecArgsType()); $$->addNewArgType($1->getType());}
 ;
 
 Type:	    INT   {$$ = new TypeClass("INT");}
@@ -100,7 +101,7 @@ Type:	    INT   {$$ = new TypeClass("INT");}
     		|BOOL {$$ = new TypeClass("BOOL");}
 ;
 
-Exp: 	    ID                      {$$ = new ExpClass(getIdType($1->getId()));}//checks also if id already exists
+Exp: 	    ID                      {$$ = new ExpClass(getIdVarType($1->getId()));}//checks also if id already exists
     		|Call                   {$$ = new ExpClass($1->getType());}
     		|NUM                    {$$ = new ExpClass("INT",$1->getValue());}
     		|NUM B                  {checkIfBValid($1->getValue());  $$ = new ExpClass("BYTE",$1->getValue());}
@@ -125,5 +126,8 @@ void yyerror(const char* input) {
 }
 
 int main() {
-    return yyparse();
+    int retVal = yyparse();
+    checkMainExist();
+    closeScope();
+    return retVal;
 }

@@ -75,15 +75,15 @@ void checkIfContinueValid(){
 std::string setRetBinopType(std::string typeLeft, std::string typeRight) {
     checkIfNumeric(typeLeft);
     checkIfNumeric(typeRight);
-    if ((typeLeft == "INT") || (typeRight != "INT")) {
+    if ((typeLeft == "INT") || (typeRight == "INT")) {
         return "INT";
     }
     return "BYTE";
 }
 
-std::string getIdType(std::string id) {
+std::string getIdVarType(std::string id) {
     TableEntry* entryOfId = symbolTable.findEntryInTable(id);
-    if (entryOfId == nullptr) {
+    if (entryOfId == nullptr || entryOfId->getIsFunc() == true) { //the id is of function
         output::errorUndef(yylineno, id);
         exit(0);
     }
@@ -123,6 +123,7 @@ void addFuncNewEntry(std::string id, std::string retType, std::vector<std::strin
 void addFuncArgsToTable(std::vector<std::string> vecArgsType, std::vector<std::string> vecArgsId) {
     //should be the same size
     checkValidArgs(vecArgsId); //see description above the function implementation
+
     if (!vecArgsType.empty()){ //case there is at least 1 argument
        TableScope& topScope = symbolTable.getTopScope();
        int argOffset = -1; //ensures that their indexes are negative order.
@@ -136,9 +137,9 @@ void addFuncArgsToTable(std::vector<std::string> vecArgsType, std::vector<std::s
     }
 }
 
-//helper function - check that there are not same ID in func declaration / in table already
+//helper function - checks that there are not the same ID in func declaration / in table already
 void checkValidArgs(std::vector<std::string>& vecArgsId) {
-    //check there is not same id in signature
+    //check there is not the same id in signature
 	for (size_t i = 0; i < vecArgsId.size(); i++) {
 		for (size_t j = i + 1; j < vecArgsId.size(); j++) {
 			if (vecArgsId[i] == vecArgsId[j]) {
@@ -147,7 +148,7 @@ void checkValidArgs(std::vector<std::string>& vecArgsId) {
 			}
 		}
 	}
-    //check there is not same id in symbolTable
+    //check there is not the same id in symbolTable
 	for (std::vector<std::string>::iterator it = vecArgsId.begin(); it != vecArgsId.end(); ++it) {
 		if (symbolTable.findEntryInTable(*it) != nullptr) {
 			output::errorDef(yylineno, *it);
@@ -183,23 +184,24 @@ void decWhileCounter() {
     WhileCounter--;
 }
 
-std::string checkFuncCall(std::string funcId, std::vector<std::string> vecArgsTypes) {
-
+std::string checkFuncCall(std::string funcId, std::vector<std::string> vecGivenArgsTypes) {
     TableEntry* funcEntry = symbolTable.getFirstScope().findEntryInScope(funcId); //checking specifically in the "func scope"
     if (funcEntry == nullptr || funcEntry->getIsFunc() == false) {
         output::errorUndefFunc(yylineno, funcId);
         exit(0);
     }
     std::vector<std::string> vecFuncTypes = funcEntry->getVecArgsTypes(); //already reversed!!!
-    std::reverse(vecArgsTypes.begin(), vecArgsTypes.end());
+    std::reverse(vecGivenArgsTypes.begin(), vecGivenArgsTypes.end());
 
-    if (vecFuncTypes.size() != vecArgsTypes.size()) {
+    if (vecFuncTypes.size() != vecGivenArgsTypes.size()) {
         output::errorPrototypeMismatch(yylineno, funcId, vecFuncTypes);
+		exit(0);
     }
 
     for (int i = 0; i < vecFuncTypes.size(); i++) {
-        if(!checkTypeMatch(vecFuncTypes[i],vecArgsTypes[i])) {
+        if(!checkTypeMatch(vecFuncTypes[i],vecGivenArgsTypes[i])) {
             output::errorPrototypeMismatch(yylineno, funcId, vecFuncTypes);
+			exit(0);
         }
     }
     return funcEntry->getType();
@@ -209,6 +211,7 @@ void checkMainExist() {
     TableEntry* funcEntry = symbolTable.getFirstScope().findEntryInScope("main");
     if(funcEntry == nullptr || funcEntry->getType() != "VOID" || !(funcEntry->getVecArgsTypes().empty())) {
         output::errorMainMissing();
+		exit(0);
     }
 }
 
